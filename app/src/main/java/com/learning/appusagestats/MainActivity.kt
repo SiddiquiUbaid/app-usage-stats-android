@@ -16,7 +16,9 @@ import com.learning.appusagestats.ui.UsageListScreen
 import com.learning.appusagestats.ui.theme.AppUsageStatsTheme
 
 class MainActivity : ComponentActivity() {
-    private lateinit var viewModel: MainViewModel
+    private lateinit var viewModel: MainViewModel // imprvmnt: this is a tradition way
+    // to initializ a ViewModel in an Activity,
+    // 'by viewModels' delegate is the latest preferred.
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

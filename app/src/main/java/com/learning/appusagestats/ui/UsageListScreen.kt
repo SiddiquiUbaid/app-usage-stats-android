@@ -39,6 +39,7 @@ fun UsageListScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // impr: extract strings to string resource
             Text(text = "Usage Permission Required", style = MaterialTheme.typography.headlineSmall)
             Spacer(modifier = Modifier.height(16.dp))
             Text(
