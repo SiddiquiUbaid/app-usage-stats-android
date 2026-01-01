@@ -33,9 +33,9 @@ class MainActivity : ComponentActivity() {
 
                     Box(modifier = Modifier.padding(innerPadding)) {
                         UsageListScreen(
-                                usageList = usageList,
-                                hasPermission = hasPermission,
-                                onGrantPermissionClick = { viewModel.openUsageSettings() }
+                            usageList = usageList,
+                            hasPermission = hasPermission,
+                            onGrantPermissionClick = { viewModel.openUsageSettings() }
                         )
                     }
                 }
