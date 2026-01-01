@@ -15,30 +15,64 @@ data class AppUsageInfo(
 
 class AppUsageRepository(private val context: Context) {
 
-            fun getUsageStats(): List<AppUsageInfo> {
+        fun getUsageStats(): List<AppUsageInfo> {
                 val usageStatsManager =
                         context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
                 val calendar = Calendar.getInstance()
                 val endTime = calendar.timeInMillis
-                calendar.add(Calendar.DAY_OF_YEAR, -1) // Last 24 hours
+
+                // Reset to midnight for "Today's" stats
+                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
                 val startTime = calendar.timeInMillis
 
-                val usageStatsList =
-                        usageStatsManager.queryUsageStats(
-                                UsageStatsManager.INTERVAL_DAILY,
-                                startTime,
-                                endTime
-                        )
+                val usageEvents = usageStatsManager.queryEvents(startTime, endTime)
+                val event = android.app.usage.UsageEvents.Event()
+
+                val foregroundTimes = mutableMapOf<String, Long>()
+                val lastResumeTime = mutableMapOf<String, Long>()
+
+                while (usageEvents.hasNextEvent()) {
+                        usageEvents.getNextEvent(event)
+                        val packageName = event.packageName ?: continue
+
+                        when (event.eventType) {
+                                android.app.usage.UsageEvents.Event.ACTIVITY_RESUMED -> {
+                                        lastResumeTime[packageName] = event.timeStamp
+                                }
+                                android.app.usage.UsageEvents.Event.ACTIVITY_PAUSED -> {
+                                        lastResumeTime[packageName]?.let { start ->
+                                                val duration = event.timeStamp - start
+                                                if (duration > 0) {
+                                                        foregroundTimes[packageName] =
+                                                                (foregroundTimes[packageName]
+                                                                        ?: 0) + duration
+                                                }
+                                                // Don't remove here for accuracy in some edge cases
+                                                // but
+                                                // usually safe.
+                                                // Sticking to basic logic:
+                                                lastResumeTime.remove(packageName)
+                                        }
+                                }
+                        }
+                }
+
+                // Add pending time for currently active apps (Resumed but not Paused)
+                lastResumeTime.forEach { (packageName, start) ->
+                        val duration = endTime - start
+                        if (duration > 0) {
+                                foregroundTimes[packageName] =
+                                        (foregroundTimes[packageName] ?: 0) + duration
+                        }
+                }
 
                 val packageManager = context.packageManager
 
-                // Aggregate usage stats by package name
-                val aggregatedStats =
-                        usageStatsList.groupBy { it.packageName }.mapValues { entry ->
-                                entry.value.sumOf { it.totalTimeInForeground }
-                        }
-
-                return aggregatedStats
+                return foregroundTimes
+                        .entries
                         .filter { (packageName, totalTime) ->
                                 totalTime > 0 &&
                                         packageManager.getLaunchIntentForPackage(packageName) !=
