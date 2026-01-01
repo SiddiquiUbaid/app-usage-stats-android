@@ -1,5 +1,6 @@
 package com.learning.appusagestats.data
 
+import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.pm.PackageManager
@@ -29,7 +30,7 @@ class AppUsageRepository(private val context: Context) {
                 val startTime = calendar.timeInMillis
 
                 val usageEvents = usageStatsManager.queryEvents(startTime, endTime)
-                val event = android.app.usage.UsageEvents.Event()
+                val event = UsageEvents.Event()
 
                 val foregroundTimes = mutableMapOf<String, Long>()
                 val lastResumeTime = mutableMapOf<String, Long>()
@@ -39,10 +40,10 @@ class AppUsageRepository(private val context: Context) {
                         val packageName = event.packageName ?: continue
 
                         when (event.eventType) {
-                                android.app.usage.UsageEvents.Event.ACTIVITY_RESUMED -> {
+                                UsageEvents.Event.ACTIVITY_RESUMED -> {
                                         lastResumeTime[packageName] = event.timeStamp
                                 }
-                                android.app.usage.UsageEvents.Event.ACTIVITY_PAUSED -> {
+                                UsageEvents.Event.ACTIVITY_PAUSED -> {
                                         lastResumeTime[packageName]?.let { start ->
                                                 val duration = event.timeStamp - start
                                                 if (duration > 0) {
@@ -50,10 +51,6 @@ class AppUsageRepository(private val context: Context) {
                                                                 (foregroundTimes[packageName]
                                                                         ?: 0) + duration
                                                 }
-                                                // Don't remove here for accuracy in some edge cases
-                                                // but
-                                                // usually safe.
-                                                // Sticking to basic logic:
                                                 lastResumeTime.remove(packageName)
                                         }
                                 }
