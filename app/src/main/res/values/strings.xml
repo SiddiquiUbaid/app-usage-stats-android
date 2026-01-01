@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">App Usage Stats</string>
+    <string name="permission_required_title">Usage Permission Required</string>
+    <string name="permission_required_desc">To track your app usage, please grant usage access permission in Settings.</string>
+    <string name="grant_permission_btn">Grant Permission</string>
+    <string name="no_data_message">No usage data found for today.</string>
 </resources>

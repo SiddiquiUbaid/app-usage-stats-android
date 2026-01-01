@@ -22,9 +22,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
+import com.learning.appusagestats.R
 import com.learning.appusagestats.data.AppUsageInfo
 
 @Composable
@@ -39,16 +41,19 @@ fun UsageListScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // impr: extract strings to string resource
-            Text(text = "Usage Permission Required", style = MaterialTheme.typography.headlineSmall)
+            Text(
+                    text = stringResource(R.string.permission_required_title),
+                    style = MaterialTheme.typography.headlineSmall
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                    text =
-                            "To track your app usage, please grant usage access permission in Settings.",
+                    text = stringResource(R.string.permission_required_desc),
                     style = MaterialTheme.typography.bodyMedium
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Button(onClick = onGrantPermissionClick) { Text("Grant Permission") }
+            Button(onClick = onGrantPermissionClick) {
+                Text(stringResource(R.string.grant_permission_btn))
+            }
         }
     } else {
         if (usageList.isEmpty()) {
@@ -56,7 +61,7 @@ fun UsageListScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
-            ) { Text("No usage data found for today.") }
+            ) { Text(stringResource(R.string.no_data_message)) }
         } else {
             LazyColumn(
                     modifier = Modifier.fillMaxSize().padding(16.dp),
