@@ -15,10 +15,20 @@ import androidx.lifecycle.ViewModelProvider
 import com.learning.appusagestats.ui.UsageListScreen
 import com.learning.appusagestats.ui.theme.AppUsageStatsTheme
 
+/**
+ * Main entry point for the App Usage Stats application.
+ *
+ * This activity:
+ * - Sets up the Compose UI with Material3 theme
+ * - Initializes the MainViewModel
+ * - Observes usage data and permission state
+ * - Refreshes data when returning to the app (onResume)
+ *
+ * Note: Currently uses ViewModelProvider for ViewModel initialization. TODO: Migrate to 'by
+ * viewModels()' delegate for cleaner code
+ */
 class MainActivity : ComponentActivity() {
-    private lateinit var viewModel: MainViewModel // imprvmnt: this is a tradition way
-    // to initializ a ViewModel in an Activity,
-    // 'by viewModels' delegate is the latest preferred.
+    private lateinit var viewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,14 +38,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppUsageStatsTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    // Collect state from ViewModel
                     val usageList by viewModel.usageList.collectAsState()
                     val hasPermission by viewModel.hasPermission.collectAsState()
 
                     Box(modifier = Modifier.padding(innerPadding)) {
                         UsageListScreen(
-                            usageList = usageList,
-                            hasPermission = hasPermission,
-                            onGrantPermissionClick = { viewModel.openUsageSettings() }
+                                usageList = usageList,
+                                hasPermission = hasPermission,
+                                onGrantPermissionClick = { viewModel.openUsageSettings() }
                         )
                     }
                 }
@@ -43,6 +54,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Refreshes permission status and usage data when activity resumes.
+     *
+     * This is crucial for detecting when user returns from Settings after granting
+     * PACKAGE_USAGE_STATS permission.
+     */
     override fun onResume() {
         super.onResume()
         viewModel.checkPermissionAndFetchData()

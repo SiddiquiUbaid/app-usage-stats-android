@@ -29,6 +29,18 @@ import androidx.core.graphics.drawable.toBitmap
 import com.learning.appusagestats.R
 import com.learning.appusagestats.data.AppUsageInfo
 
+/**
+ * Main screen displaying app usage statistics or permission request.
+ *
+ * This screen has three states:
+ * 1. Permission not granted - Shows permission request UI
+ * 2. Permission granted, no data - Shows "no data" message
+ * 3. Permission granted, has data - Shows scrollable list of apps
+ *
+ * @param usageList List of app usage information to display
+ * @param hasPermission Whether PACKAGE_USAGE_STATS permission is granted
+ * @param onGrantPermissionClick Callback when user clicks "Grant Permission" button
+ */
 @Composable
 fun UsageListScreen(
         usageList: List<AppUsageInfo>,
@@ -36,6 +48,7 @@ fun UsageListScreen(
         onGrantPermissionClick: () -> Unit
 ) {
     if (!hasPermission) {
+        // State 1: Permission request UI
         Column(
                 modifier = Modifier.fillMaxSize().padding(16.dp),
                 verticalArrangement = Arrangement.Center,
@@ -57,12 +70,14 @@ fun UsageListScreen(
         }
     } else {
         if (usageList.isEmpty()) {
+            // State 2: No usage data available
             Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
             ) { Text(stringResource(R.string.no_data_message)) }
         } else {
+            // State 3: Display usage list
             LazyColumn(
                     modifier = Modifier.fillMaxSize().padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -71,6 +86,16 @@ fun UsageListScreen(
     }
 }
 
+/**
+ * Card displaying usage information for a single app.
+ *
+ * Shows:
+ * - App icon (48dp)
+ * - App name (bold)
+ * - Formatted usage time (e.g., "2h 15m" or "45m")
+ *
+ * @param appInfo The app usage data to display
+ */
 @Composable
 fun AppUsageItem(appInfo: AppUsageInfo) {
     Card(
@@ -81,6 +106,7 @@ fun AppUsageItem(appInfo: AppUsageInfo) {
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
         ) {
+            // App icon or placeholder
             if (appInfo.icon != null) {
                 Image(
                         bitmap = appInfo.icon.toBitmap().asImageBitmap(),
@@ -93,6 +119,7 @@ fun AppUsageItem(appInfo: AppUsageInfo) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
+            // App name and usage time
             Column {
                 Text(
                         text = appInfo.appName,
@@ -109,6 +136,17 @@ fun AppUsageItem(appInfo: AppUsageInfo) {
     }
 }
 
+/**
+ * Formats milliseconds into human-readable time string.
+ *
+ * Examples:
+ * - 3661000ms -> "1h 1m"
+ * - 120000ms -> "2m"
+ * - 3600000ms -> "1h 0m"
+ *
+ * @param millis Time in milliseconds
+ * @return Formatted string (e.g., "2h 15m" or "45m")
+ */
 fun formatTime(millis: Long): String {
     val seconds = millis / 1000
     val minutes = seconds / 60
