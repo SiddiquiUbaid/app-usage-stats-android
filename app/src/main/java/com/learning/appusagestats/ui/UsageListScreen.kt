@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.learning.appusagestats.R
 import com.learning.appusagestats.data.AppUsageInfo
+import com.learning.appusagestats.util.TimeUtils
 
 /**
  * Main screen displaying app usage statistics or permission request.
@@ -86,6 +87,7 @@ fun UsageListScreen(
     }
 }
 
+
 /**
  * Card displaying usage information for a single app.
  *
@@ -99,19 +101,19 @@ fun UsageListScreen(
 @Composable
 fun AppUsageItem(appInfo: AppUsageInfo) {
     Card(
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             // App icon or placeholder
             if (appInfo.icon != null) {
                 Image(
-                        bitmap = appInfo.icon.toBitmap().asImageBitmap(),
-                        contentDescription = appInfo.appName,
-                        modifier = Modifier.size(48.dp)
+                    bitmap = appInfo.icon.toBitmap().asImageBitmap(),
+                    contentDescription = appInfo.appName,
+                    modifier = Modifier.size(48.dp)
                 )
             } else {
                 Spacer(modifier = Modifier.size(48.dp))
@@ -122,39 +124,16 @@ fun AppUsageItem(appInfo: AppUsageInfo) {
             // App name and usage time
             Column {
                 Text(
-                        text = appInfo.appName,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                    text = appInfo.appName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
-                        text = formatTime(appInfo.timeInForeground),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
+                    text = TimeUtils.formatTime(appInfo.timeInForeground),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
-    }
-}
-
-/**
- * Formats milliseconds into human-readable time string.
- *
- * Examples:
- * - 3661000ms -> "1h 1m"
- * - 120000ms -> "2m"
- * - 3600000ms -> "1h 0m"
- *
- * @param millis Time in milliseconds
- * @return Formatted string (e.g., "2h 15m" or "45m")
- */
-fun formatTime(millis: Long): String {
-    val seconds = millis / 1000
-    val minutes = seconds / 60
-    val hours = minutes / 60
-
-    return if (hours > 0) {
-        "${hours}h ${minutes % 60}m"
-    } else {
-        "${minutes}m"
     }
 }

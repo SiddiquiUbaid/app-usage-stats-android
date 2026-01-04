@@ -7,6 +7,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.learning.appusagestats.data.AppUsageInfo
 import com.learning.appusagestats.data.AppUsageRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,14 +23,24 @@ import kotlinx.coroutines.launch
  * - Exposes UI state via StateFlow for Compose
  * - Handles navigation to system settings for permission grant
  *
- * Note: Currently uses direct repository instantiation. TODO: Introduce dependency injection
- * (Hilt/Koin) for better testability
- *
- * @property application Application context for accessing system services
+ * @property repository Repository to fetch usage data
+ * @property ioDispatcher Dispatcher for IO operations (injected for testing)
+ * ```
+ *                            But for simplicity in this small app we can keep AndroidViewModel or
+ *                            pass Application context.
+ *                            Wait, passing Application is fine for AndroidViewModel but limits unit testing.
+ *                            Let's switch to standard ViewModel and abstract the Intent creation if possible.
+ *                            For now, let's inject Application only for Intent starting or pass a navigator.
+ *                            To be unit testable, we should avoid Android classes.
+ *                            But `startActivity` needs Context.
+ *                            Let's keep AndroidViewModel but inject Repository.
+ * ```
  */
-class MainViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository = AppUsageRepository(application)
+class MainViewModel(
+        application: Application,
+        private val repository: AppUsageRepository,
+        private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+) : AndroidViewModel(application) {
 
     private val _usageList = MutableStateFlow<List<AppUsageInfo>>(emptyList())
     /**
@@ -68,10 +80,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun fetchUsageStats() {
         viewModelScope.launch {
             // Execute repository call on IO thread to avoid blocking UI
-            val stats =
-                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                        repository.getUsageStats()
-                    }
+            val stats = kotlinx.coroutines.withContext(ioDispatcher) { repository.getUsageStats() }
             _usageList.value = stats
         }
     }

@@ -11,7 +11,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.learning.appusagestats.data.AppUsageRepositoryImpl
 import com.learning.appusagestats.ui.UsageListScreen
 import com.learning.appusagestats.ui.theme.AppUsageStatsTheme
 
@@ -32,7 +34,20 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+
+        // Manual Dependency Injection
+        val factory =
+                object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+                            val repository = AppUsageRepositoryImpl(applicationContext)
+                            @Suppress("UNCHECKED_CAST")
+                            return MainViewModel(application, repository) as T
+                        }
+                        throw IllegalArgumentException("Unknown ViewModel class")
+                    }
+                }
+        viewModel = ViewModelProvider(this, factory)[MainViewModel::class.java]
 
         enableEdgeToEdge()
         setContent {
