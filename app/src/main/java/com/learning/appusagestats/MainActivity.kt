@@ -52,7 +52,40 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AppUsageStatsTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                        modifier = Modifier.fillMaxSize(),
+                        topBar = {
+                            @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+                            androidx.compose.material3.CenterAlignedTopAppBar(
+                                    title = {
+                                        androidx.compose.material3.Text(
+                                                text =
+                                                        androidx.compose.ui.res.stringResource(
+                                                                id = R.string.app_name
+                                                        ),
+                                                style =
+                                                        androidx.compose.material3.MaterialTheme
+                                                                .typography
+                                                                .titleLarge
+                                        )
+                                    },
+                                    colors =
+                                            androidx.compose.material3.TopAppBarDefaults
+                                                    .centerAlignedTopAppBarColors(
+                                                            containerColor =
+                                                                    androidx.compose.material3
+                                                                            .MaterialTheme
+                                                                            .colorScheme
+                                                                            .primaryContainer,
+                                                            titleContentColor =
+                                                                    androidx.compose.material3
+                                                                            .MaterialTheme
+                                                                            .colorScheme
+                                                                            .onPrimaryContainer
+                                                    )
+                            )
+                        }
+                ) { innerPadding ->
                     // Collect state from ViewModel
                     val usageList by viewModel.usageList.collectAsState()
                     val hasPermission by viewModel.hasPermission.collectAsState()
